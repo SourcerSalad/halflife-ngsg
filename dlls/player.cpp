@@ -47,6 +47,11 @@
 extern void CopyToBodyQue(entvars_t* pev);
 extern edict_t* EntSelectSpawnPoint(CBaseEntity* pPlayer);
 
+extern cvar_t em_regen_delay;
+extern cvar_t em_regen_cap;
+extern cvar_t em_regen_pause;
+extern cvar_t rm_stat;
+
 #define TRAIN_ACTIVE 0x80
 #define TRAIN_NEW 0xc0
 #define TRAIN_OFF 0x00
@@ -112,6 +117,8 @@ TYPEDESCRIPTION CBasePlayer::m_playerSaveData[] =
 		DEFINE_FIELD(CBasePlayer, m_iFOV, FIELD_INTEGER),
 
 		DEFINE_FIELD(CBasePlayer, m_SndRoomtype, FIELD_INTEGER),
+
+		DEFINE_FIELD(CBasePlayer, m_iRawMat, FIELD_INTEGER)
 		// Don't save these. Let the game recalculate the closest env_sound, and continue to use the last room type like it always has.
 		//DEFINE_FIELD(CBasePlayer, m_SndLast, FIELD_EHANDLE),
 		//DEFINE_FIELD(CBasePlayer, m_flSndRange, FIELD_FLOAT),
@@ -405,7 +412,7 @@ bool CBasePlayer::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, fl
 		flDamage = flNew;
 	}
 
-	m_flNextRegenTime = gpGlobals->time + 5.0;
+	m_flNextRegenTime = gpGlobals->time + em_regen_pause.value;
 	// this cast to INT is critical!!! If a player ends up with 0.5 health, the engine will get that
 	// as an int (zero) and think the player is dead! (this will incite a clientside screentilt, etc)
 	fTookDamage = CBaseMonster::TakeDamage(pevInflictor, pevAttacker, (int)flDamage, bitsDamageType);
@@ -1753,7 +1760,7 @@ void CBasePlayer::UpdateStatusBar()
 void CBasePlayer::PreThink()
 {
 	// Check if the player is alive and their health is below the maximum (100)
-	if (pev->deadflag == DEAD_NO && pev->health < 100)
+	if (pev->deadflag == DEAD_NO && pev->health < em_regen_cap.value)
 	{
 		// If the game time has surpassed our next allowed regeneration tick
 		if (gpGlobals->time > m_flNextRegenTime)
@@ -1761,12 +1768,12 @@ void CBasePlayer::PreThink()
 			// Add health (e.g., 1 HP per tick)
 			pev->health += 1;
 
-			// Enforce the 100 HP cap
-			if (pev->health > 100)
-				pev->health = 100;
+			// Enforce the HP cap set in em_regen_cap
+			if (pev->health > em_regen_cap.value)
+				pev->health = em_regen_cap.value;
 
 			// Set the delay until the next regeneration tick (e.g., every 0.5 seconds)
-			m_flNextRegenTime = gpGlobals->time + 0.5;
+			m_flNextRegenTime = gpGlobals->time + em_regen_delay.value;
 		}
 	}
 	int buttonsChanged = (m_afButtonLast ^ pev->button); // These buttons have changed this frame
@@ -2532,6 +2539,7 @@ void CBasePlayer::PostThink()
 		}
 	}
 
+	m_iRawMat = (int)CVAR_GET_FLOAT("rm_stat");
 	// do weapon stuff
 	ItemPostFrame();
 
@@ -2821,6 +2829,7 @@ void CBasePlayer::Spawn()
 	m_bitsDamageType = 0;
 	m_afPhysicsFlags = 0;
 	m_fLongJump = false; // no longjump module.
+	m_iRawMat = 0;
 
 	g_engfuncs.pfnSetPhysicsKeyValue(edict(), "slj", "0");
 	g_engfuncs.pfnSetPhysicsKeyValue(edict(), "hl", "1");
@@ -4753,6 +4762,16 @@ void CBasePlayer::SetPrefsFromUserinfo(char* infobuffer)
 	{
 		m_iAutoWepSwitch = 1;
 	}
+}
+
+void CBasePlayer::ChangeRawMat(int iAmount)
+{
+	m_iRawMat += iAmount;
+
+	if (m_iRawMat < 0) m_iRawMat = 0;
+	if (m_iRawMat > 100) m_iRawMat = 100;
+
+	CVAR_SET_FLOAT("rm_stat", (int)m_iRawMat);
 }
 
 //=========================================================

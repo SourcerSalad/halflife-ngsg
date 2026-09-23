@@ -44,6 +44,12 @@ cvar_t allow_spectators = {"allow_spectators", "0.0", FCVAR_SERVER}; // 0 preven
 
 cvar_t mp_chattime = {"mp_chattime", "10", FCVAR_SERVER};
 
+//Cusom CVars
+cvar_t em_regen_delay = {"em_regen_delay", "0.3"};
+cvar_t em_regen_cap = {"em_regen_cap", "30"}; // Max HP to be regen'd
+cvar_t em_regen_pause = {"em_regen_pause", "5"}; // Time before regen starts post combat
+cvar_t rm_stat = {"rm_stat", "0", FCVAR_SERVER};
+
 //CVARS FOR SKILL LEVEL SETTINGS
 // Agrunt
 cvar_t sk_agrunt_health1 = {"sk_agrunt_health1", "0"};
@@ -461,6 +467,12 @@ void GameDLLInit()
 	g_psv_aim = CVAR_GET_POINTER("sv_aim");
 	g_footsteps = CVAR_GET_POINTER("mp_footsteps");
 	g_psv_cheats = CVAR_GET_POINTER("sv_cheats");
+
+	// Register custom CVars:
+	CVAR_REGISTER(&em_regen_delay);
+	CVAR_REGISTER(&em_regen_cap);
+	CVAR_REGISTER(&em_regen_pause);
+	CVAR_REGISTER(&rm_stat);
 
 	if (!FileSystem_LoadFileSystem())
 	{
