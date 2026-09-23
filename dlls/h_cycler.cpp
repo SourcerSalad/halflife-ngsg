@@ -41,7 +41,6 @@ public:
 
 	// Don't treat as a live target
 	bool IsAlive() override { return false; }
-	bool IsAllowedToSpeak() { return true; }
 
 	bool Save(CSave& save) override;
 	bool Restore(CRestore& restore) override;
@@ -392,7 +391,7 @@ class CWreckage : public CBaseMonster
 	void Precache() override;
 	void Think() override;
 
-	float m_flStartTime;
+	int m_flStartTime;
 };
 TYPEDESCRIPTION CWreckage::m_SaveData[] =
 	{

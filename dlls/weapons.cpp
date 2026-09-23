@@ -35,8 +35,6 @@
 
 #define TRACER_FREQ 4 // Tracers fire every fourth bullet
 
-extern bool IsBustingGame();
-extern bool IsPlayerBusting(CBaseEntity* pPlayer);
 
 //=========================================================
 // MaxAmmoCarry - pass in a name and this function will tell
@@ -446,19 +444,6 @@ void CBasePlayerItem::FallThink()
 
 		Materialize();
 	}
-	else if (m_pPlayer != NULL)
-	{
-		SetThink(NULL);
-	}
-
-	// This weapon is an egon, it has no owner and we're in busting mode, so just remove it when it hits the ground
-	if (IsBustingGame() && FNullEnt(pev->owner))
-	{
-		if (!strcmp("weapon_egon", STRING(pev->classname)))
-		{
-			UTIL_Remove(this);
-		}
-	}
 }
 
 //=========================================================
@@ -495,7 +480,7 @@ void CBasePlayerItem::AttemptToMaterialize()
 		return;
 	}
 
-	pev->nextthink = time;
+	pev->nextthink = gpGlobals->time + time;
 }
 
 //=========================================================
@@ -549,9 +534,6 @@ void CBasePlayerItem::DefaultTouch(CBaseEntity* pOther)
 {
 	// if it's not a player, ignore
 	if (!pOther->IsPlayer())
-		return;
-
-	if (IsPlayerBusting(pOther))
 		return;
 
 	CBasePlayer* pPlayer = (CBasePlayer*)pOther;
@@ -622,7 +604,6 @@ void CBasePlayerItem::AttachToPlayer(CBasePlayer* pPlayer)
 	pev->owner = pPlayer->edict();
 	pev->nextthink = gpGlobals->time + .1;
 	SetTouch(NULL);
-	SetThink(NULL); // Clear FallThink function so it can't run while attached to player.
 }
 
 // CALLED THROUGH the newly-touched weapon's instance. The existing player weapon is pOriginal
@@ -829,7 +810,7 @@ bool CBasePlayerWeapon::IsUseable()
 	}
 
 	// clip is empty (or nonexistant) and the player has no more ammo of this type.
-	return CanDeploy();
+	return false;
 }
 
 bool CBasePlayerWeapon::DefaultDeploy(const char* szViewModel, const char* szWeaponModel, int iAnim, const char* szAnimExt, int body)
@@ -1031,7 +1012,7 @@ void CBasePlayerWeapon::DoRetireWeapon()
 //=========================================================================
 float CBasePlayerWeapon::GetNextAttackDelay(float delay)
 {
-	if (m_flLastFireTime == 0 || m_flNextPrimaryAttack == -1)
+	if (m_flLastFireTime == 0 || m_flNextPrimaryAttack <= -1.1)
 	{
 		// At this point, we are assuming that the client has stopped firing
 		// and we are going to reset our book keeping variables.
@@ -1411,7 +1392,7 @@ IMPLEMENT_SAVERESTORE(CRpg, CBasePlayerWeapon);
 TYPEDESCRIPTION CRpgRocket::m_SaveData[] =
 	{
 		DEFINE_FIELD(CRpgRocket, m_flIgniteTime, FIELD_TIME),
-		DEFINE_FIELD(CRpgRocket, m_hLauncher, FIELD_EHANDLE),
+		DEFINE_FIELD(CRpgRocket, m_pLauncher, FIELD_EHANDLE),
 };
 IMPLEMENT_SAVERESTORE(CRpgRocket, CGrenade);
 

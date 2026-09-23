@@ -20,10 +20,6 @@
 // this class routes messages through titles.txt for localisation
 //
 
-#include <algorithm>
-#include <cassert>
-#include <iterator>
-
 #include "hud.h"
 #include "cl_util.h"
 #include <string.h>
@@ -50,70 +46,49 @@ bool CHudTextMessage::Init()
 // the new value is pushed into dst_buffer
 char* CHudTextMessage::LocaliseTextString(const char* msg, char* dst_buffer, int buffer_size)
 {
-	assert(buffer_size > 0);
-
 	char* dst = dst_buffer;
 
-	// Subtract one so we have space for the null terminator no matter what.
-	std::size_t remainingBufferSize = buffer_size - 1;
+	int remainingBufferSize = buffer_size;
 
-	for (const char* src = msg; *src != '\0' && remainingBufferSize > 0;)
+	for (char* src = (char*)msg; *src != 0 && remainingBufferSize > 0; remainingBufferSize--)
 	{
 		if (*src == '#')
 		{
 			// cut msg name out of string
 			static char word_buf[255];
-			const char* word_start = src;
-
-			++src;
-
+			char *wdst = word_buf, *word_start = src;
+			for (++src; (*src >= 'A' && *src <= 'z') || (*src >= '0' && *src <= '9'); wdst++, src++)
 			{
-				const auto end = std::find_if_not(src, src + std::strlen(src), [](auto c)
-					{ return (c >= 'A' && c <= 'z') || (c >= '0' && c <= '9'); });
-
-				const std::size_t nameLength = end - src;
-
-				const std::size_t count = std::min(std::size(word_buf) - 1, nameLength);
-
-				if (count < nameLength)
-				{
-					gEngfuncs.Con_DPrintf(
-						"CHudTextMessage::LocaliseTextString: Token name starting at index %d too long in message \"%s\"\n",
-						static_cast<int>(src - msg), msg);
-				}
-
-				std::strncpy(word_buf, src, count);
-				word_buf[count] = '\0';
-
-				src += nameLength;
+				*wdst = *src;
 			}
+			*wdst = 0;
 
 			// lookup msg name in titles.txt
 			client_textmessage_t* clmsg = TextMessageGet(word_buf);
-			if (clmsg && clmsg->pMessage)
+			if (!clmsg || !(clmsg->pMessage))
 			{
-				// copy string into message over the msg name
-				const std::size_t count = std::min(remainingBufferSize, std::strlen(clmsg->pMessage));
-
-				std::strncpy(dst, clmsg->pMessage, count);
-
-				dst += count;
-				remainingBufferSize -= count;
+				src = word_start;
+				*dst = *src;
+				dst++, src++;
 				continue;
 			}
 
-			src = word_start;
+			// copy string into message over the msg name
+			for (char* wsrc = (char*)clmsg->pMessage; *wsrc != 0; wsrc++, dst++)
+			{
+				*dst = *wsrc;
+			}
+			*dst = 0;
 		}
-
-		*dst = *src;
-		dst++;
-		src++;
-
-		--remainingBufferSize;
+		else
+		{
+			*dst = *src;
+			dst++, src++;
+			*dst = 0;
+		}
 	}
 
-	*dst = '\0'; // ensure null termination
-
+	dst_buffer[buffer_size - 1] = 0; // ensure null termination
 	return dst_buffer;
 }
 
@@ -121,7 +96,7 @@ char* CHudTextMessage::LocaliseTextString(const char* msg, char* dst_buffer, int
 char* CHudTextMessage::BufferedLocaliseTextString(const char* msg)
 {
 	static char dst_buffer[1024];
-	LocaliseTextString(msg, dst_buffer, std::size(dst_buffer));
+	LocaliseTextString(msg, dst_buffer, 1024);
 	return dst_buffer;
 }
 
@@ -223,7 +198,7 @@ bool CHudTextMessage::MsgFunc_TextMsg(const char* pszName, int iSize, void* pbuf
 
 	case HUD_PRINTNOTIFY:
 		psz[0] = 1; // mark this message to go into the notify buffer
-		safe_sprintf(psz + 1, MSG_BUF_SIZE - 1, msg_text, sstr1, sstr2, sstr3, sstr4);
+		safe_sprintf(psz + 1, MSG_BUF_SIZE, msg_text, sstr1, sstr2, sstr3, sstr4);
 		ConsolePrint(ConvertCRtoNL(psz));
 		break;
 

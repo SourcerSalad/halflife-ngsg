@@ -77,10 +77,6 @@ void ClientPrint(entvars_t* client, int msg_dest, const char* msg_name, const ch
 bool CBaseToggle::Restore(class CRestore&) { return true; }
 bool CBaseToggle::Save(class CSave&) { return true; }
 bool CBaseToggle::KeyValue(struct KeyValueData_s*) { return false; }
-void CBaseToggle::PlaySentence(const char* pszSentence, float duration, float volume, float attenuation) {}
-void CBaseToggle::PlaySentenceCore(const char* pszSentence, float duration, float volume, float attenuation) {}
-void CBaseToggle::PlayScriptedSentence(const char* pszSentence, float duration, float volume, float attenuation, bool bConcurrent, CBaseEntity* pListener) {}
-void CBaseToggle::SentenceStop() {}
 
 // CGrenade Stubs
 void CGrenade::BounceSound() {}
@@ -99,8 +95,6 @@ CBaseEntity* UTIL_FindEntityInSphere(CBaseEntity* pStartEntity, const Vector& ve
 Vector UTIL_VecToAngles(const Vector& vec) { return 0; }
 CSprite* CSprite::SpriteCreate(const char* pSpriteName, const Vector& origin, bool animate) { return 0; }
 void CBeam::PointEntInit(const Vector& start, int endIndex) {}
-const Vector& CBeam::GetStartPos() { return g_vecZero; }
-const Vector& CBeam::GetEndPos() { return g_vecZero; }
 CBeam* CBeam::BeamCreate(const char* pSpriteName, int width) { return NULL; }
 void CSprite::Expand(float scaleSpeed, float fadeSpeed) {}
 
@@ -202,6 +196,9 @@ bool CBaseMonster::FindLateralCover(const Vector& vecThreat, const Vector& vecVi
 Vector CBaseMonster::ShootAtEnemy(const Vector& shootOrigin) { return g_vecZero; }
 bool CBaseMonster::FacingIdeal() { return false; }
 bool CBaseMonster::FCanActiveIdle() { return false; }
+void CBaseMonster::PlaySentenceCore(const char* pszSentence, float duration, float volume, float attenuation) {}
+void CBaseMonster::PlayScriptedSentence(const char* pszSentence, float duration, float volume, float attenuation, bool bConcurrent, CBaseEntity* pListener) {}
+void CBaseMonster::SentenceStop() {}
 void CBaseMonster::CorpseFallThink() {}
 void CBaseMonster::MonsterInitDead() {}
 bool CBaseMonster::BBoxFlat() { return true; }

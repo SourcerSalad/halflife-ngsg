@@ -29,8 +29,6 @@
 //=========================================================
 CHalfLifeRules::CHalfLifeRules()
 {
-	SERVER_COMMAND( "exec spserver.cfg\n" );
-
 	RefreshSkillData();
 }
 

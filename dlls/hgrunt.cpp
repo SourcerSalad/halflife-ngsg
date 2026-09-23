@@ -846,29 +846,26 @@ void CHGrunt::HandleAnimEvent(MonsterEvent_t* pEvent)
 	{
 	case HGRUNT_AE_DROP_GUN:
 	{
-		if (GetBodygroup(GUN_GROUP) != GUN_NONE)
+		Vector vecGunPos;
+		Vector vecGunAngles;
+
+		GetAttachment(0, vecGunPos, vecGunAngles);
+
+		// switch to body group with no gun.
+		SetBodygroup(GUN_GROUP, GUN_NONE);
+
+		// now spawn a gun.
+		if (FBitSet(pev->weapons, HGRUNT_SHOTGUN))
 		{
-			Vector vecGunPos;
-			Vector vecGunAngles;
-
-			GetAttachment(0, vecGunPos, vecGunAngles);
-
-			// switch to body group with no gun.
-			SetBodygroup(GUN_GROUP, GUN_NONE);
-
-			// now spawn a gun.
-			if (FBitSet(pev->weapons, HGRUNT_SHOTGUN))
-			{
-				DropItem("weapon_shotgun", vecGunPos, vecGunAngles);
-			}
-			else
-			{
-				DropItem("weapon_9mmAR", vecGunPos, vecGunAngles);
-			}
-			if (FBitSet(pev->weapons, HGRUNT_GRENADELAUNCHER))
-			{
-				DropItem("ammo_ARgrenades", BodyTarget(pev->origin), vecGunAngles);
-			}
+			DropItem("weapon_shotgun", vecGunPos, vecGunAngles);
+		}
+		else
+		{
+			DropItem("weapon_9mmAR", vecGunPos, vecGunAngles);
+		}
+		if (FBitSet(pev->weapons, HGRUNT_GRENADELAUNCHER))
+		{
+			DropItem("ammo_ARgrenades", BodyTarget(pev->origin), vecGunAngles);
 		}
 	}
 	break;
@@ -1271,7 +1268,6 @@ Schedule_t slGruntCombatFail[] =
 Task_t tlGruntVictoryDance[] =
 	{
 		{TASK_STOP_MOVING, (float)0},
-		{TASK_SET_ACTIVITY, (float)ACT_IDLE},
 		{TASK_FACE_ENEMY, (float)0},
 		{TASK_WAIT, (float)1.5},
 		{TASK_GET_PATH_TO_ENEMY_CORPSE, (float)0},

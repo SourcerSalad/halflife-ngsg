@@ -21,10 +21,6 @@
 #include "player.h"
 #include "gamerules.h"
 
-// If you want the "legacy" controls where primary attack is "throw first charge / detonate" and secondary attack is
-// "throw extra" charge, simply comment this define.
-#define MODERN_SATCHEL_CONTROLS
-
 class CSatchelCharge : public CGrenade
 {
 	void Spawn() override;
@@ -167,7 +163,7 @@ LINK_ENTITY_TO_CLASS(weapon_satchel, CSatchel);
 //=========================================================
 bool CSatchel::AddDuplicate(CBasePlayerItem* pOriginal)
 {
-	CSatchel* pSatchel = nullptr;
+	CSatchel* pSatchel;
 
 #ifdef CLIENT_DLL
 	if (bIsMultiplayer())
@@ -177,25 +173,7 @@ bool CSatchel::AddDuplicate(CBasePlayerItem* pOriginal)
 	{
 		pSatchel = (CSatchel*)pOriginal;
 
-		if (pOriginal->m_pPlayer == NULL)
-			return true;
-
-		int nSatchelsInPocket = pSatchel->m_pPlayer->m_rgAmmo[pSatchel->PrimaryAmmoIndex()];
-		int nNumSatchels = 0;
-		CBaseEntity* pLiveSatchel = NULL;
-
-		while ((pLiveSatchel = UTIL_FindEntityInSphere(pLiveSatchel, pOriginal->m_pPlayer->pev->origin, 4096)) != NULL)
-		{
-			if (FClassnameIs(pLiveSatchel->pev, "monster_satchel"))
-			{
-				if (pLiveSatchel->pev->owner == pOriginal->m_pPlayer->edict())
-				{
-					nNumSatchels++;
-				}
-			}
-		}
-
-		if (pSatchel->m_chargeReady != 0 && (nSatchelsInPocket + nNumSatchels) >= SATCHEL_MAX_CARRY)
+		if (pSatchel->m_chargeReady != 0)
 		{
 			// player has some satchels deployed. Refuse to add more.
 			return false;
@@ -337,13 +315,6 @@ void CSatchel::Holster()
 
 void CSatchel::PrimaryAttack()
 {
-#ifdef MODERN_SATCHEL_CONTROLS
-	// we're reloading, don't allow fire
-	if (m_chargeReady != 2)
-	{
-		Throw();
-	}
-#else
 	switch (m_chargeReady)
 	{
 	case 0:
@@ -353,7 +324,28 @@ void CSatchel::PrimaryAttack()
 	break;
 	case 1:
 	{
-		Detonate();
+		SendWeaponAnim(SATCHEL_RADIO_FIRE);
+
+		edict_t* pPlayer = m_pPlayer->edict();
+
+		CBaseEntity* pSatchel = NULL;
+
+		while ((pSatchel = UTIL_FindEntityInSphere(pSatchel, m_pPlayer->pev->origin, 4096)) != NULL)
+		{
+			if (FClassnameIs(pSatchel->pev, "monster_satchel"))
+			{
+				if (pSatchel->pev->owner == pPlayer)
+				{
+					pSatchel->Use(m_pPlayer, m_pPlayer, USE_ON, 0);
+					m_chargeReady = 2;
+				}
+			}
+		}
+
+		m_chargeReady = 2;
+		m_flNextPrimaryAttack = GetNextAttackDelay(0.5);
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5;
 		break;
 	}
 
@@ -363,23 +355,15 @@ void CSatchel::PrimaryAttack()
 		}
 		break;
 	}
-#endif
 }
 
 
 void CSatchel::SecondaryAttack()
 {
-#ifdef MODERN_SATCHEL_CONTROLS
-	if (m_chargeReady == 1)
-	{
-		Detonate();
-	}
-#else
 	if (m_chargeReady != 2)
 	{
 		Throw();
 	}
-#endif
 }
 
 
@@ -414,33 +398,6 @@ void CSatchel::Throw()
 		m_flNextPrimaryAttack = GetNextAttackDelay(1.0);
 		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
 	}
-}
-
-
-void CSatchel::Detonate()
-{
-	SendWeaponAnim(SATCHEL_RADIO_FIRE);
-
-	edict_t* pPlayer = m_pPlayer->edict();
-
-	CBaseEntity* pSatchel = NULL;
-
-	while ((pSatchel = UTIL_FindEntityInSphere(pSatchel, m_pPlayer->pev->origin, 4096)) != NULL)
-	{
-		if (FClassnameIs(pSatchel->pev, "monster_satchel"))
-		{
-			if (pSatchel->pev->owner == pPlayer)
-			{
-				pSatchel->Use(m_pPlayer, m_pPlayer, USE_ON, 0);
-				m_chargeReady = 2;
-			}
-		}
-	}
-
-	m_chargeReady = 2;
-	m_flNextPrimaryAttack = GetNextAttackDelay(0.5);
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5;
 }
 
 

@@ -179,13 +179,7 @@ void CBaseMonster::BarnacleVictimBitten(entvars_t* pevBarnacle)
 //=========================================================
 void CBaseMonster::BarnacleVictimReleased()
 {
-	// Half-Life: Updated - this condition fixes the Barnacle victim
-	// "ressurection" bug where it should be considered dead but is still
-	// alive. That is until taking certain types of damage (club, explosives)
-	// while some don't work (bullets).
-	// To restore the original behavior/bug, remove this condition.
-	if ( !HasMemory( bits_MEMORY_KILLED ) && (pev->deadflag == DEAD_NO) && pev->health > 0 )
-		m_IdealMonsterState = MONSTERSTATE_IDLE;
+	m_IdealMonsterState = MONSTERSTATE_IDLE;
 
 	pev->velocity = g_vecZero;
 	pev->movetype = MOVETYPE_STEP;
@@ -1986,7 +1980,7 @@ void CBaseMonster::MoveExecute(CBaseEntity* pTargetEnt, const Vector& vecDir, fl
 	while (flTotal > 0.001)
 	{
 		// don't walk more than 16 units or stairs stop working
-		flStep = V_min(16.0f, flTotal);
+		flStep = V_min(16.0, flTotal);
 		UTIL_MoveToOrigin(ENT(pev), m_Route[m_iRouteIndex].vecLocation, flStep, MOVE_NORMAL);
 		flTotal -= flStep;
 	}
@@ -2087,7 +2081,7 @@ void CBaseMonster::StartMonster()
 		// Try to move the monster to make sure it's not stuck in a brush.
 		if (!WALK_MOVE(ENT(pev), 0, 0, WALKMOVE_NORMAL))
 		{
-			ALERT(at_error, "Monster %s stuck in wall--level design error\n", STRING(pev->classname));
+			ALERT(at_error, "Monster %s stuck in wall--level design error", STRING(pev->classname));
 			pev->effects = EF_BRIGHTFIELD;
 		}
 	}
@@ -2533,19 +2527,16 @@ float CBaseMonster::ChangeYaw(int yawSpeed)
 	ideal = pev->ideal_yaw;
 	if (current != ideal)
 	{
-		if (m_flLastYawTime == 0.0f)
-		{
-			m_flLastYawTime = gpGlobals->time - gpGlobals->frametime;
-		}
-
 		float delta = gpGlobals->time - m_flLastYawTime;
+
 		m_flLastYawTime = gpGlobals->time;
 
-		// Clamp delta like the engine does with frametime
 		if (delta > 0.25)
+		{
 			delta = 0.25;
+		}
 
-		speed = (float)yawSpeed * delta * 2;
+		speed = yawSpeed * delta * 2;
 		move = ideal - current;
 
 		if (ideal > current)
@@ -2898,7 +2889,7 @@ void CBaseMonster::ReportAIState()
 {
 	ALERT_TYPE level = at_console;
 
-	static const char* pStateNames[] = {"None", "Idle", "Combat", "Alert", "Hunt", "Prone", "Scripted", "PlayDead", "Dead"};
+	static const char* pStateNames[] = {"None", "Idle", "Combat", "Alert", "Hunt", "Prone", "Scripted", "Dead"};
 
 	ALERT(level, "%s: ", STRING(pev->classname));
 	if ((int)m_MonsterState < ARRAYSIZE(pStateNames))
@@ -3236,6 +3227,38 @@ bool CBaseMonster::FCanActiveIdle()
 	}
 	*/
 	return false;
+}
+
+
+void CBaseMonster::PlaySentence(const char* pszSentence, float duration, float volume, float attenuation)
+{
+	ASSERT(pszSentence != nullptr);
+
+	if (!pszSentence || !CanPlaySentence(true))
+	{
+		return;
+	}
+
+	PlaySentenceCore(pszSentence, duration, volume, attenuation);
+}
+
+void CBaseMonster::PlaySentenceCore(const char* pszSentence, float duration, float volume, float attenuation)
+{
+	if (pszSentence[0] == '!')
+		EMIT_SOUND_DYN(edict(), CHAN_VOICE, pszSentence, volume, attenuation, 0, PITCH_NORM);
+	else
+		SENTENCEG_PlayRndSz(edict(), pszSentence, volume, attenuation, 0, PITCH_NORM);
+}
+
+void CBaseMonster::PlayScriptedSentence(const char* pszSentence, float duration, float volume, float attenuation, bool bConcurrent, CBaseEntity* pListener)
+{
+	PlaySentence(pszSentence, duration, volume, attenuation);
+}
+
+
+void CBaseMonster::SentenceStop()
+{
+	EMIT_SOUND(edict(), CHAN_VOICE, "common/null.wav", 1.0, ATTN_IDLE);
 }
 
 

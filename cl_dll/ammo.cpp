@@ -73,14 +73,10 @@ void WeaponsResource::LoadWeaponSprites(WEAPON* pWeapon)
 {
 	int i, iRes;
 
-	if (ScreenWidth > 2560 && ScreenHeight > 1600)
-		iRes = 2560;
-	else if (ScreenWidth >= 1280 && ScreenHeight > 720)
-		iRes = 1280;
-	else if (ScreenWidth >= 640)
-		iRes = 640;
-	else
+	if (ScreenWidth < 640)
 		iRes = 320;
+	else
+		iRes = 640;
 
 	char sz[256];
 
@@ -327,17 +323,16 @@ bool CHudAmmo::VidInit()
 	// If we've already loaded weapons, let's get new sprites
 	gWR.LoadAllWeaponSprites();
 
-	int nScale = 1;
-
-	if (ScreenWidth > 2560 && ScreenHeight > 1600)
-		nScale = 4;
-	else if (ScreenWidth >= 1280 && ScreenHeight > 720)
-		nScale = 3;
-	else if (ScreenWidth >= 640)
-		nScale = 2;
-
-	giABWidth = 10 * nScale;
-	giABHeight = 2 * nScale;
+	if (ScreenWidth >= 640)
+	{
+		giABWidth = 20;
+		giABHeight = 4;
+	}
+	else
+	{
+		giABWidth = 10;
+		giABHeight = 2;
+	}
 
 	return true;
 }
@@ -643,8 +638,7 @@ bool CHudAmmo::MsgFunc_WeaponList(const char* pszName, int iSize, void* pbuf)
 
 	WEAPON Weapon;
 
-	strncpy(Weapon.szName, READ_STRING(), MAX_WEAPON_NAME);
-	Weapon.szName[sizeof(Weapon.szName) - 1] = '\0';
+	strcpy(Weapon.szName, READ_STRING());
 	Weapon.iAmmoType = (int)READ_CHAR();
 
 	Weapon.iMax1 = READ_BYTE();
@@ -661,27 +655,6 @@ bool CHudAmmo::MsgFunc_WeaponList(const char* pszName, int iSize, void* pbuf)
 	Weapon.iId = READ_CHAR();
 	Weapon.iFlags = READ_BYTE();
 	Weapon.iClip = 0;
-
-	if (Weapon.iId < 0 || Weapon.iId >= MAX_WEAPONS)
-		return 0;
-
-	if (Weapon.iSlot < 0 || Weapon.iSlot >= MAX_WEAPON_SLOTS + 1)
-		return 0;
-
-	if (Weapon.iSlotPos < 0 || Weapon.iSlotPos >= MAX_WEAPON_POSITIONS + 1)
-		return 0;
-
-	if (Weapon.iAmmoType < -1 || Weapon.iAmmoType >= MAX_AMMO_TYPES)
-		return 0;
-
-	if (Weapon.iAmmo2Type < -1 || Weapon.iAmmo2Type >= MAX_AMMO_TYPES)
-		return 0;
-
-	if (Weapon.iAmmoType >= 0 && Weapon.iMax1 == 0)
-		return 0;
-
-	if (Weapon.iAmmo2Type >= 0 && Weapon.iMax2 == 0)
-		return 0;
 
 	gWR.AddWeapon(&Weapon);
 
@@ -894,8 +867,8 @@ bool CHudAmmo::Draw(float flTime)
 
 	ScaleColors(r, g, b, a);
 
+	// Does this weapon have a clip?
 	y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
-	y += (int)(gHUD.m_iFontHeight * 0.2f);
 
 	// Does weapon have any ammo at all?
 	if (m_pWeapon->iAmmoType > 0)
@@ -1210,7 +1183,7 @@ client_sprite_t* GetSpriteList(client_sprite_t* pList, const char* psz, int iRes
 
 	while (0 != i--)
 	{
-		if ((p->iRes == iRes) && (0 == strcmp(psz, p->szName)))
+		if ((0 == strcmp(psz, p->szName)) && (p->iRes == iRes))
 			return p;
 		p++;
 	}

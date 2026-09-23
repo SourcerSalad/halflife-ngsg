@@ -75,7 +75,7 @@ public:
 	bool CheckMeleeAttack1(float flDot, float flDist) override;
 	bool CheckRangeAttack1(float flDot, float flDist) override;
 
-	float ChangeYaw(int yawSpeed) override;
+	float ChangeYaw(int speed) override;
 	Activity GetStoppedActivity() override;
 	void SetActivity(Activity NewActivity) override;
 
@@ -88,7 +88,7 @@ public:
 
 	float VectorToPitch(const Vector& vec);
 	float FlPitchDiff();
-	float ChangePitch(int pitchSpeed);
+	float ChangePitch(int speed);
 
 	Vector m_SaveVelocity;
 	float m_idealDist;
@@ -106,8 +106,7 @@ public:
 
 	float m_flNextAlert;
 
-	float m_flLastPitchTime; // Last frame time pitch was changed
-	float m_flLastZYawTime;	 // Last frame time Z was changed when yaw was changed
+	float m_flLastPitchTime;
 
 	static const char* pIdleSounds[];
 	static const char* pAlertSounds[];
@@ -807,18 +806,12 @@ float CIchthyosaur::FlPitchDiff()
 	return flPitchDiff;
 }
 
-float CIchthyosaur::ChangePitch(int pitchSpeed)
+float CIchthyosaur::ChangePitch(int speed)
 {
 	if (pev->movetype == MOVETYPE_FLY)
 	{
 		float diff = FlPitchDiff();
 		float target = 0;
-
-		if (m_flLastPitchTime == 0.0f)
-		{
-			m_flLastPitchTime = gpGlobals->time - gpGlobals->frametime;
-		}
-
 		if (m_IdealActivity != GetStoppedActivity())
 		{
 			if (diff < -20)
@@ -827,30 +820,31 @@ float CIchthyosaur::ChangePitch(int pitchSpeed)
 				target = -45;
 		}
 
+		if (m_flLastPitchTime == 0)
+		{
+			m_flLastPitchTime = gpGlobals->time - gpGlobals->frametime;
+		}
+
 		float delta = gpGlobals->time - m_flLastPitchTime;
+
 		m_flLastPitchTime = gpGlobals->time;
 
-		// Clamp delta like the engine does with frametime
-		if (delta > 0.25f)
-			delta = 0.25f;
+		if (delta > 0.25)
+		{
+			delta = 0.25;
+		}
 
-		float speed = 220.0f * delta;
-		pev->angles.x = UTIL_Approach(target, pev->angles.x, speed);
+		pev->angles.x = UTIL_Approach(target, pev->angles.x, 220.0 * delta);
 	}
 	return 0;
 }
 
-float CIchthyosaur::ChangeYaw(int yawSpeed)
+float CIchthyosaur::ChangeYaw(int speed)
 {
 	if (pev->movetype == MOVETYPE_FLY)
 	{
 		float diff = FlYawDiff();
 		float target = 0;
-
-		if (m_flLastZYawTime == 0.0f)
-		{
-			m_flLastZYawTime = gpGlobals->time - gpGlobals->frametime;
-		}
 
 		if (m_IdealActivity != GetStoppedActivity())
 		{
@@ -860,17 +854,23 @@ float CIchthyosaur::ChangeYaw(int yawSpeed)
 				target = -20;
 		}
 
+		if (m_flLastZYawTime == 0)
+		{
+			m_flLastZYawTime = gpGlobals->time - gpGlobals->frametime;
+		}
+
 		float delta = gpGlobals->time - m_flLastZYawTime;
+
 		m_flLastZYawTime = gpGlobals->time;
 
-		// Clamp delta like the engine does with frametime
-		if (delta > 0.25f)
-			delta = 0.25f;
+		if (delta > 0.25)
+		{
+			delta = 0.25;
+		}
 
-		float speed = 220.f * delta;
-		pev->angles.z = UTIL_Approach(target, pev->angles.z, speed);
+		pev->angles.z = UTIL_Approach(target, pev->angles.z, 220.0 * delta);
 	}
-	return CFlyingMonster::ChangeYaw(yawSpeed);
+	return CFlyingMonster::ChangeYaw(speed);
 }
 
 

@@ -593,12 +593,6 @@ bool CBreakable::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, flo
 
 void CBreakable::Die()
 {
-	// Don't allow explosives to damage this again to prevent spawning multiple copies of items and gibs.
-	if (pev->solid == SOLID_NOT)
-	{
-		return;
-	}
-
 	Vector vecSpot;		// shard origin
 	Vector vecVelocity; // shard velocity
 	CBaseEntity* pEntity = NULL;
@@ -824,8 +818,6 @@ public:
 	// breakables use an overridden takedamage
 	bool TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType) override;
 
-	int DamageDecal(int bitsDamageType) override;
-
 	static TYPEDESCRIPTION m_SaveData[];
 
 	static const char* m_soundNames[3];
@@ -964,11 +956,7 @@ void CPushable::Move(CBaseEntity* pOther, bool push)
 
 	if (pOther->IsPlayer())
 	{
-		// JoshA: Used to check for FORWARD too and logic was inverted
-		// from comment which seems wrong.
-		// Fixed to just check for USE being not set for PUSH.
-		// Should have the right effect.
-		if (push && !!(pevToucher->button & IN_USE)) // Don't push unless the player is not useing (pull)
+		if (push && (pevToucher->button & (IN_FORWARD | IN_USE)) == 0) // Don't push unless the player is pushing forward and NOT use (pull)
 			return;
 		playerTouch = true;
 	}
@@ -990,39 +978,19 @@ void CPushable::Move(CBaseEntity* pOther, bool push)
 	else
 		factor = 0.25;
 
-	// This used to be added every 'frame', but to be consistent at high fps,
-	// now act as if it's added at a constant rate with a fudge factor.
-	extern cvar_t sv_pushable_fixed_tick_fudge;
-
-	if (!push && sv_pushable_fixed_tick_fudge.value >= 0.0f)
-	{
-		factor *= gpGlobals->frametime * sv_pushable_fixed_tick_fudge.value;
-	}
-
-	// JoshA: Always apply this if pushing, or if under the player's velocity.
-	if (push || (abs(pev->velocity.x) < abs(pevToucher->velocity.x - pevToucher->velocity.x * factor)))
-		pev->velocity.x += pevToucher->velocity.x * factor;
-	if (push || (abs(pev->velocity.y) < abs(pevToucher->velocity.y - pevToucher->velocity.y * factor)))
-		pev->velocity.y += pevToucher->velocity.y * factor;
+	pev->velocity.x += pevToucher->velocity.x * factor;
+	pev->velocity.y += pevToucher->velocity.y * factor;
 
 	float length = sqrt(pev->velocity.x * pev->velocity.x + pev->velocity.y * pev->velocity.y);
-	if (length > MaxSpeed())
+	if (push && (length > MaxSpeed()))
 	{
 		pev->velocity.x = (pev->velocity.x * MaxSpeed() / length);
 		pev->velocity.y = (pev->velocity.y * MaxSpeed() / length);
 	}
 	if (playerTouch)
 	{
-		// JoshA: Match the player to our pushable's velocity.
-		// Previously this always happened, but it should only
-		// happen if the player is pushing (or rather, being pushed.)
-		// This either stops the player in their tracks or nudges them along.
-		if (push)
-		{
-			pevToucher->velocity.x = pev->velocity.x;
-			pevToucher->velocity.y = pev->velocity.y;
-		}
-
+		pevToucher->velocity.x = pev->velocity.x;
+		pevToucher->velocity.y = pev->velocity.y;
 		if ((gpGlobals->time - m_soundTime) > 0.7)
 		{
 			m_soundTime = gpGlobals->time;
@@ -1054,12 +1022,4 @@ bool CPushable::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 		return CBreakable::TakeDamage(pevInflictor, pevAttacker, flDamage, bitsDamageType);
 
 	return true;
-}
-
-int CPushable::DamageDecal(int bitsDamageType)
-{
-	if (FBitSet(pev->spawnflags, SF_PUSH_BREAKABLE))
-		return CBreakable::DamageDecal(bitsDamageType);
-
-	return CBaseEntity::DamageDecal(bitsDamageType);
 }

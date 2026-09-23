@@ -109,7 +109,6 @@ class CRuleBrushEntity : public CRuleEntity
 {
 public:
 	void Spawn() override;
-	int ObjectCaps() override { return CRuleEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 
 private:
 };
@@ -173,7 +172,7 @@ void CGameScore::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE use
 		return;
 
 	// Only players can use this
-	if (pActivator && pActivator->IsPlayer())
+	if (pActivator->IsPlayer())
 	{
 		if (AwardToTeam())
 		{
@@ -809,7 +808,7 @@ bool CGamePlayerEquip::KeyValue(KeyValueData* pkvd)
 		{
 			char tmp[128];
 
-			UTIL_StripToken(pkvd->szKeyName, tmp, sizeof(tmp));
+			UTIL_StripToken(pkvd->szKeyName, tmp);
 
 			m_weaponNames[i] = ALLOC_STRING(tmp);
 			m_weaponCount[i] = atoi(pkvd->szValue);
