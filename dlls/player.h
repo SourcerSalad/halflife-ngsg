@@ -137,6 +137,8 @@ public:
 	float m_flDuckTime;		  // how long we've been ducking
 	float m_flWallJumpTime;	  // how long until next walljump
 
+	float m_flNextRegenTime; // time until regen kicks in
+
 	float m_flSuitUpdate;						 // when to play next suit update
 	int m_rgSuitPlayList[CSUITPLAYLIST];		 // next sentencenum to play for suit update
 	int m_iSuitPlayNext;						 // next sentence slot for queue storage;

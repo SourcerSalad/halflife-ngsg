@@ -405,6 +405,7 @@ bool CBasePlayer::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, fl
 		flDamage = flNew;
 	}
 
+	m_flNextRegenTime = gpGlobals->time + 5.0;
 	// this cast to INT is critical!!! If a player ends up with 0.5 health, the engine will get that
 	// as an int (zero) and think the player is dead! (this will incite a clientside screentilt, etc)
 	fTookDamage = CBaseMonster::TakeDamage(pevInflictor, pevAttacker, (int)flDamage, bitsDamageType);
@@ -1751,6 +1752,23 @@ void CBasePlayer::UpdateStatusBar()
 
 void CBasePlayer::PreThink()
 {
+	// Check if the player is alive and their health is below the maximum (100)
+	if (pev->deadflag == DEAD_NO && pev->health < 100)
+	{
+		// If the game time has surpassed our next allowed regeneration tick
+		if (gpGlobals->time > m_flNextRegenTime)
+		{
+			// Add health (e.g., 1 HP per tick)
+			pev->health += 1;
+
+			// Enforce the 100 HP cap
+			if (pev->health > 100)
+				pev->health = 100;
+
+			// Set the delay until the next regeneration tick (e.g., every 0.5 seconds)
+			m_flNextRegenTime = gpGlobals->time + 0.5;
+		}
+	}
 	int buttonsChanged = (m_afButtonLast ^ pev->button); // These buttons have changed this frame
 
 	// Debounced button codes for pressed/released
