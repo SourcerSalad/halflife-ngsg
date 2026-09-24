@@ -4037,6 +4037,10 @@ void CBasePlayer::UpdateClientData()
 		MESSAGE_END();
 	}
 
+	MESSAGE_BEGIN(MSG_ONE, gmsgMyCustomStat, NULL, pev);
+	WRITE_SHORT(m_iRawMat);
+	MESSAGE_END();
+
 	if (m_WeaponBits != m_ClientWeaponBits)
 	{
 		m_ClientWeaponBits = m_WeaponBits;

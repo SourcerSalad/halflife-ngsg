@@ -61,6 +61,7 @@ bool CHudHealth::Init()
 	m_fAttackFront = m_fAttackRear = m_fAttackRight = m_fAttackLeft = 0;
 	giDmgHeight = 0;
 	giDmgWidth = 0;
+	m_iMyCustomStat = 0;
 
 	memset(m_dmg, 0, sizeof(DAMAGE_IMAGE) * NUM_DMG_TYPES);
 
@@ -228,6 +229,18 @@ bool CHudHealth::Draw(float flTime)
 		int iWidth = HealthWidth / 10;
 		UnpackRGB(r, g, b, RGB_YELLOWISH);
 		FillRGBA(x, y, iWidth, iHeight, r, g, b, a);
+
+		int statX = 40;
+		int statY = ScreenHeight - 120;
+
+		int r, g, b;
+		UnpackRGB(r, g, b, RGB_YELLOWISH);
+		ScaleColors(r, g, b, a);
+
+		char szStatString[32];
+		sprintf(szStatString, "STAT: %d", m_iMyCustomStat);
+
+		gHUD.DrawHudString(statX, statY, ScreenWidth, szStatString, r, g, b);
 	}
 
 	DrawDamage(flTime);
@@ -475,4 +488,14 @@ void CHudHealth::UpdateTiles(float flTime, long bitsDamage)
 
 	// damage bits are only turned on here;  they are turned off when the draw time has expired (in DrawDamage())
 	m_bitsDamage |= bitsDamage;
+}
+
+int CHudHealth::MsgFunc_MyStat(const char* pszName, int iSize, void* pbuf)
+{
+	BEGIN_READ(pbuf, iSize);
+	m_iMyCustomStat = READ_SHORT();
+
+	m_iFlags |= HUD_ACTIVE;
+
+	return 1;
 }
