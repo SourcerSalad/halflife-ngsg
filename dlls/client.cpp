@@ -901,6 +901,10 @@ void ClientPrecache()
 	PRECACHE_SOUND("player/geiger2.wav");
 	PRECACHE_SOUND("player/geiger1.wav");
 
+	PRECACHE_SOUND("boid/boid_idle3.wav");
+	PRECACHE_SOUND("fvox/beep.wav");
+	PRECACHE_SOUND("fvox/buzz.wav");
+
 	if (giPrecacheGrunt)
 		UTIL_PrecacheOther("monster_human_grunt");
 }

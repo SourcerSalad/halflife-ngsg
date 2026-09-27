@@ -1759,7 +1759,7 @@ void CBasePlayer::UpdateStatusBar()
 
 void CBasePlayer::PreThink()
 {
-	// Check if the player is alive and their health is below the maximum (100)
+	// Check if the player is alive and their health is below the regen cap
 	if (pev->deadflag == DEAD_NO && pev->health < em_regen_cap.value)
 	{
 		// If the game time has surpassed our next allowed regeneration tick
@@ -1767,7 +1767,7 @@ void CBasePlayer::PreThink()
 		{
 			// Add health (e.g., 1 HP per tick)
 			pev->health += 1;
-
+			EMIT_SOUND(ENT(pev), CHAN_ITEM, "boid/boid_idle3.wav", 1, ATTN_NORM);
 			// Enforce the HP cap set in em_regen_cap
 			if (pev->health > em_regen_cap.value)
 				pev->health = em_regen_cap.value;
@@ -3393,6 +3393,23 @@ void CBasePlayer::ImpulseCommands()
 	int iImpulse = (int)pev->impulse;
 	switch (iImpulse)
 	{
+	case 77:
+	{
+		ClientPrint(pev, HUD_PRINTCONSOLE, "case 77 invoked");
+		if (m_iRawMat >= 1)
+		{
+			ChangeRawMat(-1);
+			ClientPrint(pev, HUD_PRINTNOTIFY, "Canister Expended");
+			EMIT_SOUND(ENT(pev), CHAN_ITEM, "fvox/beep.wav", 1, ATTN_NORM);
+			pev->armorvalue = 100;
+		}
+		else
+		{
+			ClientPrint(pev, HUD_PRINTCENTER, "Insufficient Canisters");
+			EMIT_SOUND(ENT(pev), CHAN_ITEM, "fvox/buzz.wav", 1, ATTN_NORM);
+		}
+		break;
+	}
 	case 99:
 	{
 
