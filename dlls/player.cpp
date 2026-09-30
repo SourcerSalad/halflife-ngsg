@@ -3395,7 +3395,6 @@ void CBasePlayer::ImpulseCommands()
 	{
 	case 77:
 	{
-		ClientPrint(pev, HUD_PRINTCONSOLE, "case 77 invoked");
 		if (m_iRawMat >= 1)
 		{
 			ChangeRawMat(-1);
