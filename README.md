@@ -1,64 +1,14 @@
 About
 ======================
 
-[Half-Life Updated](https://github.com/SamVanheer/halflife-updated), [Opposing Force Updated](https://github.com/SamVanheer/halflife-op4-updated) and [Blue Shift Updated](https://github.com/SamVanheer/halflife-bs-updated) are repositories that provide updated versions of the Half-Life SDK, targeted to the 3 Half-Life 1 PC games officially available.
+NGsG (New GoldSrc Game) is what I refer to as 'the great experiment.' The very vague, simplistic and literal name follows a convention I've used for some time (NSG - New Survival Game, USG - Unity Survival Game, et al).
 
 Purpose
 ======================
 
-Each repository provides project files compatible with Visual Studio 2019 and 2022, as well as bug fixes. The Opposing Force and Blue Shift projects are reference implementations of their respective games. This means they provide the original features, implemented as they are in the original games, including the many cases of code duplication.
+I've been meaning to start production of an original First Person Shooter in a retro style/engine - a boomer shooter, basically. After playing a really well made mod for Half Life, I decided to wander back down the rabbit hole of modding hl1, thankfully I already had the sdk set up for Visual Studio and got to work.
 
-The goal of the Updated repositories is to allow modders to make mods based on these games, while providing bug fixes that could be applied to the official games as well. A mod installation is also provided for each repository to allow players to play these games with all bug fixes applied.
-
-This mod installation includes files that are required when making a mod based on these SDKs.
-
-The **scope** of the Updated projects is **limited to bug fixes**, **feature requests to improve the game's code** and **fixing game-breaking bugs in the game assets** (e.g. soft-locked trigger setups). Changes like **graphical upgrades**, **physics engine changes** and other **engine changes** are **out of scope**.
-
-If you need help setting up the SDK or developing a mod please ask on the [TWHL website](https://twhl.info/) or on its [Discord server](https://discord.gg/jEw8EqD).
-
-See the `#welcome` channel for more information about the Discord server. Please do not use the `#unified-sdk` channel for general help requests, there are channels for modding help.
-
-See the TWHL thread for status updates about these projects: https://twhl.info/thread/view/20055
-
-Requirements to run mods built with this SDK
-======================
-
-Only the latest Steam version of Half-Life is supported. For the Opposing Force and Blue Shift repositories you will need to own the games and have them installed to use their assets.
-
-Building this SDK
-======================
-
-See [BUILDING.md](BUILDING.md)
-
-Mod installation instructions
-======================
-
-See [INSTALL.md](INSTALL.md)
-
-What isn't supported
-======================
-
-Backwards compatibility with WON and older versions of Steam Half-Life is not supported. Xash isn't supported, but may work. You cannot use Updated clients to play on vanilla servers, you also cannot use vanilla clients to play on Updated servers.
-
-Placing Updated game dlls in vanilla installations is not supported.
-
-These repositories have a limited scope and will not have major changes applied.
-
-Deathmatch Classic and Ricochet
-======================
-
-The source code for Deathmatch Classic and Ricochet is in the original Half-Life SDK. The purpose of these updated repositories is to provide updated versions only for Half-Life and its expansion packs, so the source code for these mods has been removed.
-
-Since the vanilla versions don't compile under newer versions of Visual Studio separate repositories have been made that provide the same updates to make them compile:
-* https://github.com/SamVanheer/dmc-updated
-* https://github.com/SamVanheer/ricochet-updated
-
-Unlike the other updated repositories these only provide basic fixes. No further development and support will be provided.
-
-Changelog
-======================
-
-See [CHANGELOG.md](CHANGELOG.md) and [FULL_CHANGELOG.md](FULL_CHANGELOG.md)
+I made great strides in establishing the mechanics that would define combat in my mod, I built new entities, started modelling and texturing etc. I came to realize however that HL1 is quite alienating for those not used to it's quirks and unappreciative of it's vintage charm - it's just too old and basic. And so, I'm moving on, but not before ensuring I have documented my progress.
 
 Half Life 1 SDK LICENSE
 ======================
@@ -79,41 +29,3 @@ LIMITATION OF LIABILITY.  IN NO EVENT SHALL VALVE OR ITS SUPPLIERS BE LIABLE FOR
  
  
 If you would like to use the SDK for a commercial purpose, please contact Valve at sourceengine@valvesoftware.com.
-
-
-Half-Life 1
-======================
-
-This is the README for the Half-Life 1 engine and its associated games.
-
-Please use this repository to report bugs and feature requests for Half-Life 1 related products.
-
-Reporting Issues
-----------------
-
-If you encounter an issue while using Half-Life 1 games, first search the [issue list](https://github.com/ValveSoftware/halflife/issues) to see if it has already been reported. Include closed issues in your search.
-
-If it has not been reported, create a new issue with at least the following information:
-
-- a short, descriptive title;
-- a detailed description of the issue, including any output from the command line;
-- steps for reproducing the issue;
-- your system information.\*; and
-- the `version` output from the in‐game console.
-
-Please place logs either in a code block (press `M` in your browser for a GFM cheat sheet) or a [gist](https://gist.github.com).
-
-\* The preferred and easiest way to get this information is from Steam's Hardware Information viewer from the menu (`Help -> System Information`). Once your information appears: right-click within the dialog, choose `Select All`, right-click again, and then choose `Copy`. Paste this information into your report, preferably in a code block.
-
-Conduct
--------
-
-
-There are basic rules of conduct that should be followed at all times by everyone participating in the discussions.  While this is generally a relaxed environment, please remember the following:
-
-- Do not insult, harass, or demean anyone.
-- Do not intentionally multi-post an issue.
-- Do not use ALL CAPS when creating an issue report.
-- Do not repeatedly update an open issue remarking that the issue persists.
-
-Remember: Just because the issue you reported was reported here does not mean that it is an issue with Half-Life.  As well, should your issue not be resolved immediately, it does not mean that a resolution is not being researched or tested.  Patience is always appreciated.
