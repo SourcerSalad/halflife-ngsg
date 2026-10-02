@@ -10,6 +10,16 @@ I've been meaning to start production of an original First Person Shooter in a r
 
 I made great strides in establishing the mechanics that would define combat in my mod, I built new entities, started modelling and texturing etc. I came to realize however that HL1 is quite alienating for those not used to it's quirks and unappreciative of it's vintage charm - it's just too old and basic. And so, I'm moving on, but not before ensuring I have documented my progress.
 
+Build version: 26w39a
+======================
+This first 'numbered' build contains the most basic additions - a new stat for the player, and the means to increment it via a function call or a console command (rm_stat).
+
+Build version: 26w41a
+======================
+This version contains the updated functionality for rm_stat. A hammer placeable entity for a pickup item that increases rm_stat, a custom hud element that piggybacks on the health readout's code, and new impulse command bound to a key to 'use' the new item, decrementing rm_stat and filling suit power.
+
+The intention was for this new stat to be used to active a range of abilities to supplement the weapons sandbox and leverage environmental features.
+
 Half Life 1 SDK LICENSE
 ======================
 
